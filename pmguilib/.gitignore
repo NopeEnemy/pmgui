@@ -1,4 +1,8 @@
 /target
+Cargo.lock
+CHANGES.md
+run.sh
+main.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
