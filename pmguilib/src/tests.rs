@@ -15,8 +15,8 @@ fn remove_task_test() {
     let mut data = UserData::new();
     data.add_task("Task", 5);
 
-    assert!(!data.remove_task("Not a task"));
-    assert!(data.remove_task("Task"));
+    assert!(!data.remove_task(4));
+    assert!(data.remove_task(0));
 
     assert_eq!(data.tasks, vec![]);
 }
@@ -25,8 +25,8 @@ fn remove_task_test() {
 fn change_task_test() {
     let mut data = UserData::new();
     data.add_task("Task", 5);
-    assert!(!data.change_task("Not a task"));
-    assert!(data.change_task("Task"));
+    assert!(!data.change_task(3));
+    assert!(data.change_task(0));
 
     assert_eq!(
         data.tasks,
@@ -54,8 +54,8 @@ fn remove_item_test() {
     let mut data = UserData::new();
     data.add_item("Item", 5);
 
-    assert!(!data.remove_item("Not an item"));
-    assert!(data.remove_item("Item"));
+    assert!(!data.remove_item(10));
+    assert!(data.remove_item(0));
 
     assert_eq!(data.shop, vec![]);
 }
@@ -66,14 +66,54 @@ fn buy_item_test() {
     data.add_item("Item", 5);
     data.points = 10;
 
-    assert!(!data.buy_item("Not an item"));
-    assert!(data.buy_item("Item"));
+    assert!(!data.buy_item(1));
+    assert!(data.buy_item(0));
 
     assert_eq!(
         data.shop,
         vec![Item {
             name: "Item".to_string(),
-            price: 5
+            points: 5
+        }]
+    );
+
+    assert_eq!(data.points, 5);
+}
+
+// Penalties:
+#[test]
+fn add_penalty_test() {
+    let mut data = UserData::new();
+    data.add_penalty("Penalty", 5);
+
+    assert_eq!(data.penalties, vec![Item::new("Penalty", 5)]);
+}
+
+#[test]
+fn remove_penalty_test() {
+    let mut data = UserData::new();
+    data.add_penalty("Penalty", 5);
+
+    assert!(!data.remove_penalty(10));
+    assert!(data.remove_penalty(0));
+
+    assert_eq!(data.penalties, vec![]);
+}
+
+#[test]
+fn penalty_test() {
+    let mut data = UserData::new();
+    data.add_penalty("Penalty", 5);
+    data.points = 10;
+
+    assert!(!data.penalty(1));
+    assert!(data.penalty(0));
+
+    assert_eq!(
+        data.penalties,
+        vec![Item {
+            name: "Penalty".to_string(),
+            points: 5
         }]
     );
 

@@ -14,6 +14,8 @@ mod pmguilib {
         #[pyo3(get)]
         pub shop: Vec<Item>,
         #[pyo3(get)]
+        pub penalties: Vec<Item>,
+        #[pyo3(get)]
         pub points: usize,
     }
 
@@ -28,38 +30,30 @@ mod pmguilib {
         }
 
         /// # remove_task
-        /// Reqires a task name. If a task is not found this will return false
-        /// Warning: it will delete all task with this task name
-        pub fn remove_task(&mut self, task_name: &str) -> bool {
-            let mut is_deleted = false;
-            self.tasks.retain(|i| {
-                if i.name == task_name {
-                    is_deleted = true;
-                    false
-                } else {
-                    true
-                }
-            });
-
-            is_deleted
+        /// Reqires a task id. If a task is not found this will return false
+        pub fn remove_task(&mut self, task_id: usize) -> bool {
+            if self.tasks.len() > task_id {
+                self.tasks.remove(task_id);
+                true
+            } else {
+                false
+            }
         }
 
         /// # change_task
         /// This function changes a task state. If task is not completed it will be set to completed, if not it will be set not completed.
         /// If a task not found, it will return false
-        pub fn change_task(&mut self, task_name: &str) -> bool {
-            let mut is_changed = false;
-            for t in self.tasks.iter_mut() {
-                if t.name == task_name {
-                    is_changed = true;
+        pub fn change_task(&mut self, task_id: usize) -> bool {
+            match self.tasks.get_mut(task_id) {
+                Some(t) => {
                     t.state = !t.state;
                     if t.state {
                         self.points += t.reward;
                     }
+                    true
                 }
+                None => false,
             }
-
-            is_changed
         }
 
         /// # list_tasks
@@ -70,48 +64,77 @@ mod pmguilib {
 
         // Shop:
 
-        // NT
         /// # add_item
         /// This function adds an item
         pub fn add_item(&mut self, name: &str, price: usize) {
             self.shop.push(Item::new(name, price));
         }
 
-        // NT
         /// # remove_item
-        /// Reqires a item name. If a task is not found it will return false
-        /// Warning: It will remove all items with this name
-        pub fn remove_item(&mut self, item_name: &str) -> bool {
-            let mut is_deleted = false;
-            self.shop.retain(|i| {
-                if i.name == item_name {
-                    is_deleted = true;
-                    false
-                } else {
-                    true
-                }
-            });
-            is_deleted
+        /// Reqires a item id. If a item is not found it will return false
+        pub fn remove_item(&mut self, item_id: usize) -> bool {
+            if self.shop.len() > item_id {
+                self.shop.remove(item_id);
+                true
+            } else {
+                false
+            }
         }
 
-        // NT
         /// # buy_item
         /// Buy an item. This operation may be used multiple times
         /// If a task not found, this will return false
         /// If it is not enough points, it will return false
         /// If an item bought, it will return true
-        /// Warning: It will buy all items with this name
-        pub fn buy_item(&mut self, item_name: &str) -> bool {
-            let mut is_bought = false;
-            for i in self.shop.iter_mut() {
-                if i.name == item_name {
-                    if i.price <= self.points {
-                        self.points -= i.price;
-                        is_bought = true;
+        pub fn buy_item(&mut self, item_id: usize) -> bool {
+            match self.shop.get(item_id) {
+                Some(i) => {
+                    if i.points <= self.points {
+                        self.points -= i.points;
+                        true
+                    } else {
+                        false
                     }
                 }
+                None => false,
             }
-            is_bought
+        }
+
+        // Penalties
+
+        // NT
+        /// # add_penalty
+        /// This function adds a penalty
+        pub fn add_penalty(&mut self, name: &str, points: usize) {
+            self.penalties.push(Item::new(name, points));
+        }
+
+        // NT
+        /// # remove_penalty
+        /// Reqires a item id. If a item is not found it will return false
+        pub fn remove_penalty(&mut self, item_id: usize) -> bool {
+            if self.penalties.len() > item_id {
+                self.penalties.remove(item_id);
+                true
+            } else {
+                false
+            }
+        }
+
+        // NT
+        /// # penalty
+        /// Assign penalty points. This operation may be used multiple times
+        /// If a penalty does not found, this will return false
+        /// If it is not enough points, it will consume it anyway
+        /// If a penalty activated, it will return true
+        pub fn penalty(&mut self, item_id: usize) -> bool {
+            match self.penalties.get(item_id) {
+                Some(i) => {
+                    self.points -= i.points;
+                    true
+                }
+                None => false,
+            }
         }
 
         // Self:
@@ -120,6 +143,7 @@ mod pmguilib {
             Self {
                 tasks: vec![],
                 shop: vec![],
+                penalties: vec![],
                 points: 0,
             }
         }
@@ -156,14 +180,14 @@ mod pmguilib {
         #[pyo3(get)]
         pub name: String,
         #[pyo3(get)]
-        pub price: usize,
+        pub points: usize,
     }
 
     impl Item {
-        pub fn new(name: &str, price: usize) -> Self {
+        pub fn new(name: &str, points: usize) -> Self {
             Self {
                 name: name.to_string(),
-                price,
+                points,
             }
         }
     }
