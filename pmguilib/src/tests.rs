@@ -1,5 +1,5 @@
 #[cfg(test)]
-use crate::pmguilib::{Item, Task, UserData};
+use crate::pmguilib::{Item, PenaltyResult, Task, UserData};
 
 // Tasks:
 #[test]
@@ -106,8 +106,8 @@ fn penalty_test() {
     data.add_penalty("Penalty", 5);
     data.points = 10;
 
-    assert!(!data.penalty(1));
-    assert!(data.penalty(0));
+    assert_eq!(data.penalty(1), PenaltyResult::NotFound);
+    assert_eq!(data.penalty(0), PenaltyResult::Ok);
 
     assert_eq!(
         data.penalties,
