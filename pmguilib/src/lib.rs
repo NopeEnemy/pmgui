@@ -125,13 +125,17 @@ mod pmguilib {
         /// # penalty
         /// Assign penalty points. This operation may be used multiple times
         /// If a penalty does not found, this will return false
-        /// If it is not enough points, it will consume it anyway
+        /// If it is not enough points, it will return false
         /// If a penalty activated, it will return true
         pub fn penalty(&mut self, item_id: usize) -> bool {
             match self.penalties.get(item_id) {
                 Some(i) => {
-                    self.points -= i.points;
-                    true
+                    if self.points >= i.points {
+                        self.points -= i.points;
+                        true
+                    } else {
+                        false
+                    }
                 }
                 None => false,
             }
